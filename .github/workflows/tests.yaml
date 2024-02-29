@@ -1,0 +1,27 @@
+name: Tests
+on:
+  push:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  poc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: "none"
+      - name: Install Composer dependencies
+        run: |
+          composer install --ansi
+          bin/console cache:clear --env=test
+      - name: Run PHPUnit
+        run: |
+          bin/console doctrine:schema:create
+          bin/phpunit
